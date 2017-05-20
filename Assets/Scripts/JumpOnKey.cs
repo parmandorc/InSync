@@ -17,6 +17,10 @@ public class JumpOnKey : MonoBehaviour {
 
     [SerializeField]
     private bool isJumping = false;
+    private bool isJumpDown = true;
+
+    private enum jumpStates{ notJumping, forwardJumping, backwardJumping };
+    jumpStates currentJumpState = jumpStates.notJumping; 
 
     public Rigidbody rb;
     public PlayerController pc;
@@ -38,29 +42,39 @@ public class JumpOnKey : MonoBehaviour {
         currentWp = pc.SelectedKey.Waypoint.gameObject;
         currentKey = pc.SelectedKey.BouncingPad;
 
-
-
-        //transform.position = Vector3.Lerp(startMarker.position, endMarker.position, fracJourney);
-        if(isJumping == false)
+        if(currentJumpState == jumpStates.notJumping)
         {
-            if (Input.GetButtonDown("Jump")){
-                isJumping = true;
+            if (Input.GetButtonDown("Jump"))
+            {
+                currentJumpState = jumpStates.forwardJumping;
                 startTime = Time.time;
             }
-
         }
 
-        if(isJumping == true)
+        if(currentJumpState == jumpStates.forwardJumping)
         {
             float distCovered = (Time.time - startTime) * speed;
-            rb.MovePosition(hermit(currentWp.transform.position, currentKey.transform.position, new Vector3(0,ang_scl,0), new Vector3(0,ang_scl,0), distCovered));
-            if(distCovered >= 1)
+            rb.MovePosition(hermit(currentWp.transform.position, currentKey.transform.position, new Vector3(0, ang_scl, 0), new Vector3(0, ang_scl, 0), distCovered));
+            if (distCovered >= 1)
             {
-                rb.MovePosition(currentWp.transform.position);
-                isJumping = false;
+                //rb.MovePosition(currentWp.transform.position);
+                currentJumpState = jumpStates.backwardJumping;
+                startTime = Time.time;
             }
         }
 
+        if(currentJumpState == jumpStates.backwardJumping)
+        {
+            float distCovered = (Time.time - startTime) * speed;
+            rb.MovePosition(hermit(currentKey.transform.position, currentWp.transform.position, new Vector3(0, ang_scl, 0), new Vector3(0, ang_scl, 0), distCovered));
+            if (distCovered >= 1)
+            {
+                //rb.MovePosition(currentWp.transform.position);
+                currentJumpState = jumpStates.notJumping;
+            }
+        }
+
+        
         //rb.MovePosition(Vector3.Lerp(startMarker.position, endMarker.position, fracJourney));
     }
 
