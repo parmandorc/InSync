@@ -34,12 +34,10 @@ public class NoteReader : MonoBehaviour {
     // The maximum beats the player can press a key in advance without the tempo being increased
     private float TempoIncreaseThreshold = 0.5f;
 
-    [SerializeField]
-    private string notes = "abbabababa";
+    private List<string> m_Notes;
 
-    [SerializeField]
-    private int[] timings = { 1,2,3,4,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
-
+    private List<int> m_Timings;
+    
     private int counter = 0;
 
     private List<NotesMovement> m_NotesQueue;
@@ -59,14 +57,19 @@ public class NoteReader : MonoBehaviour {
     public float SongTime { get { return m_Time; } }
     public float windowSize { get { return WindowSize; } }
 
-    // Returns the equivalent of a specific number of beats in seconds, according to the current tempo
-    //public float BeatsToTime(int beats) { return (beats * 60.0f) / m_Tempo; }
+    void Awake()
+    {
+        m_Notes = new List<string>();
+        m_Timings = new List<int>();
 
-	// Use this for initialization
-	void Start () {
+        ReadFile();
+    }
+
+    // Use this for initialization
+    void Start () {
         staveUI = GameObject.FindGameObjectWithTag("Stave").GetComponent<RectTransform>();
         m_NotesQueue = new List<NotesMovement>();
-        m_AccumulatedTiming = timings[0];
+        m_AccumulatedTiming = Mathf.CeilToInt(WindowSize);
         m_Tempo = InitialTempo;
     }
 	
@@ -90,17 +93,17 @@ public class NoteReader : MonoBehaviour {
         // Spawn all notes inside the window
         if (m_AccumulatedTiming < m_Time + WindowSize)
         {
-            if (counter < notes.Length)
+            if (counter < m_Notes.Count)
             {
                 GameObject newNote = Instantiate(noteInstance, Vector3.zero, Quaternion.identity);
-                newNote.transform.GetChild(0).gameObject.GetComponent<Text>().text = notes[counter].ToString();
+                newNote.transform.GetChild(0).gameObject.GetComponent<Text>().text = m_Notes[counter].ToString();
                 newNote.transform.SetParent(staveUI.transform, false);
                 newNote.transform.localPosition += new Vector3(staveUI.rect.width, 0, 0);
                 NotesMovement newNoteMovement = newNote.GetComponent<NotesMovement>();
                 newNoteMovement.SetTiming(m_AccumulatedTiming);
                 m_NotesQueue.Add(newNoteMovement);
 
-                m_AccumulatedTiming += timings[counter + 1];
+                m_AccumulatedTiming += m_Timings[counter];
 
                 counter++;
             }
@@ -144,6 +147,40 @@ public class NoteReader : MonoBehaviour {
             GameObject note = m_NotesQueue[0].gameObject;
             m_NotesQueue.RemoveAt(0);
             Destroy(note);
+        }
+    }
+
+    void ReadFile()
+    {
+        string path = System.IO.Path.Combine(Application.dataPath, "SongsData");
+        path = System.IO.Path.Combine(path, "test.csv");
+
+        string[] lines = System.IO.File.ReadAllLines(path);
+        foreach (string line in lines)
+        {
+            ProcessLine(line);
+        }
+    }
+
+    void ProcessLine(string line)
+    {
+        string notes = "";
+        string[] fields = line.Split(new char[] {','});
+        
+        if (fields.Length > 1)
+        {
+            int timing;
+            if (int.TryParse(fields[0].Trim(), out timing))
+            {
+                m_Timings.Add(timing);
+
+                for (int i = 1; i < fields.Length; i++)
+                {
+                    notes += fields[i].Trim().ToUpper();
+                }
+
+                m_Notes.Add(notes);
+            }
         }
     }
 }
