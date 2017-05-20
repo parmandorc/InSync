@@ -20,8 +20,8 @@ public class JumpOnKey : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        currentWp = pc.TargetWaypoint.gameObject;
-        currentKey = pc.TargetWaypoint.gameObject.GetComponent<StoreKey>().key.gameObject.transform.GetChild(0).gameObject;
+        currentWp = pc.SelectedKey.Waypoint.gameObject;
+        currentKey = pc.SelectedKey.BouncingPad;
 
         if (Input.GetButtonDown("Jump")){
             rb.MovePosition(currentKey.transform.position);
