@@ -16,7 +16,20 @@ public class NoteReader : MonoBehaviour {
     private uint InitialTempo = 120;
 
     [SerializeField]
-    private float TempoChangeRate = 1.0f;
+    // The rate at which the tempo decays while the track is stopped
+    private float TempoDecayRate = 0.1f;
+
+    [SerializeField]
+    // The maximum time the player can be delayed on pressing a key without the tempo decaying
+    private float TempoDecayThreshold = 0.5f;
+
+    [SerializeField]
+    // The rate at which the tempo is increased when pressing a key too fast
+    private float TempoIncreaseRate = 1.0f;
+
+    [SerializeField]
+    // The maximum time the player can press a key in advance without the tempo being increased
+    private float TempoIncreaseThreshold = 0.5f;
 
     [SerializeField]
     private string notes = "abbabababa";
@@ -36,6 +49,8 @@ public class NoteReader : MonoBehaviour {
     private RectTransform staveUI;
 
     private float m_Tempo;
+
+    private float m_TimerSinceTimeStopped;
 
     // Getters
     public float SongTime { get { return m_Time; } }
@@ -60,6 +75,8 @@ public class NoteReader : MonoBehaviour {
         {
             OnKeyPress(' ');
         }
+
+        UpdateTempoDecay();
 
         // Increment time
         if (m_NotesQueue.Count > 0)
@@ -87,12 +104,40 @@ public class NoteReader : MonoBehaviour {
         }
     }
 
+    // Updates the management of tempo decay
+    void UpdateTempoDecay()
+    {
+        if (m_NotesQueue.Count > 0)
+        {
+            if (Mathf.Approximately(m_Time, BeatsToTime(m_NotesQueue[0].Timing)))
+            {
+                m_TimerSinceTimeStopped += Time.deltaTime;
+                if (m_TimerSinceTimeStopped > TempoDecayThreshold)
+                {
+                    m_Tempo -= Time.deltaTime * TempoDecayThreshold;
+                    print(m_Tempo);
+                }
+            }
+            else
+            {
+                m_TimerSinceTimeStopped = 0.0f;
+            }
+        }
+    }
+
     // Called when a key is pressed
     public void OnKeyPress(char key)
     {
         if (m_NotesQueue.Count > 0)
         {
-            //(m_NotesQueue[0].Timing - m_Time);
+            // Determine the increase in tempo
+            float timeAdvance = BeatsToTime(m_NotesQueue[0].Timing) - m_Time;
+            if (timeAdvance >= TempoIncreaseThreshold)
+            {
+                m_Tempo += timeAdvance * TempoIncreaseRate;
+                print(m_Tempo);
+            }
+
             GameObject note = m_NotesQueue[0].gameObject;
             m_NotesQueue.RemoveAt(0);
             Destroy(note);
