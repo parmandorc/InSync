@@ -13,44 +13,62 @@ public class NoteReader : MonoBehaviour {
     private GameObject noteInstance;
 
     [SerializeField]
+    private uint InitialTempo = 120;
+
+    [SerializeField]
+    private float TempoChangeRate = 1.0f;
+
+    [SerializeField]
     private string notes = "abbabababa";
 
     [SerializeField]
-    private float[] timings = { 1,2,3,4,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+    private int[] timings = { 1,2,3,4,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
 
     private int counter = 0;
 
     private List<NotesMovement> m_NotesQueue;
 
-    private float m_AccumulatedTiming;
+    private int m_AccumulatedTiming;
 
     // The time that has passed since the beginning of the song
     private float m_Time;
 
     private RectTransform staveUI;
 
+    private float m_Tempo;
+
     // Getters
     public float SongTime { get { return m_Time; } }
     public float windowSize { get { return WindowSize; } }
+
+    // Returns the equivalent of a specific number of beats in seconds, according to the current tempo
+    public float BeatsToTime(int beats) { return (beats * 60.0f) / m_Tempo; }
 
 	// Use this for initialization
 	void Start () {
         staveUI = GameObject.FindGameObjectWithTag("Stave").GetComponent<RectTransform>();
         m_NotesQueue = new List<NotesMovement>();
         m_AccumulatedTiming = timings[0];
+        m_Tempo = InitialTempo;
     }
 	
 	// Update is called once per frame
 	void Update () {
 
+        // Until pressing keys is implemented...
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            OnKeyPress(' ');
+        }
+
         // Increment time
         if (m_NotesQueue.Count > 0)
-            m_Time = Mathf.Min(m_Time + Time.deltaTime, m_NotesQueue[0].Timing);
+            m_Time = Mathf.Min(m_Time + Time.deltaTime, BeatsToTime(m_NotesQueue[0].Timing));
         else
             m_Time += Time.deltaTime;
 
         // Spawn all notes inside the window
-        if (m_AccumulatedTiming < m_Time + WindowSize)
+        if (BeatsToTime(m_AccumulatedTiming) < m_Time + WindowSize)
         {
             if (counter < notes.Length)
             {
@@ -67,10 +85,14 @@ public class NoteReader : MonoBehaviour {
                 counter++;
             }
         }
+    }
 
-        // Until pressing keys is implemented...
-        if (Input.GetKeyDown(KeyCode.Space) && m_NotesQueue.Count > 0)
+    // Called when a key is pressed
+    public void OnKeyPress(char key)
+    {
+        if (m_NotesQueue.Count > 0)
         {
+            //(m_NotesQueue[0].Timing - m_Time);
             GameObject note = m_NotesQueue[0].gameObject;
             m_NotesQueue.RemoveAt(0);
             Destroy(note);
