@@ -34,13 +34,15 @@ public class NoteReader : MonoBehaviour {
     // The maximum beats the player can press a key in advance without the tempo being increased
     private float TempoIncreaseThreshold = 0.5f;
 
-    private List<string> m_Notes;
+    private List<List<string>> m_Notes;
 
     private List<int> m_Timings;
     
     private int counter = 0;
 
-    private List<NotesMovement> m_NotesQueue;
+    private List<NotesMovement> m_NoteObjectsQueue;
+
+    private List<List<string>> m_NotesQueue;
 
     private int m_AccumulatedTiming;
 
@@ -59,7 +61,9 @@ public class NoteReader : MonoBehaviour {
 
     void Awake()
     {
-        m_Notes = new List<string>();
+        PianoKey.OnKeyHit += OnKeyPress;
+
+        m_Notes = new List<List<string>>();
         m_Timings = new List<int>();
 
         ReadFile();
@@ -68,7 +72,8 @@ public class NoteReader : MonoBehaviour {
     // Use this for initialization
     void Start () {
         staveUI = GameObject.FindGameObjectWithTag("Stave").GetComponent<RectTransform>();
-        m_NotesQueue = new List<NotesMovement>();
+        m_NoteObjectsQueue = new List<NotesMovement>();
+        m_NotesQueue = new List<List<string>>();
         m_AccumulatedTiming = Mathf.CeilToInt(WindowSize);
         m_Tempo = InitialTempo;
     }
@@ -76,17 +81,11 @@ public class NoteReader : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-        // Until pressing keys is implemented...
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            OnKeyPress(' ');
-        }
-
         UpdateTempoDecay();
 
         // Increment time
-        if (m_NotesQueue.Count > 0)
-            m_Time = Mathf.Min(m_Time + Time.deltaTime * m_Tempo / 60.0f, m_NotesQueue[0].Timing);
+        if (m_NoteObjectsQueue.Count > 0)
+            m_Time = Mathf.Min(m_Time + Time.deltaTime * m_Tempo / 60.0f, m_NoteObjectsQueue[0].Timing);
         else
             m_Time += Time.deltaTime * m_Tempo / 60.0f;
 
@@ -96,12 +95,15 @@ public class NoteReader : MonoBehaviour {
             if (counter < m_Notes.Count)
             {
                 GameObject newNote = Instantiate(noteInstance, Vector3.zero, Quaternion.identity);
-                newNote.transform.GetChild(0).gameObject.GetComponent<Text>().text = m_Notes[counter].ToString();
+                string newNoteStr = "";
+                foreach (string str in m_Notes[counter]) newNoteStr += str;
+                newNote.transform.GetChild(0).gameObject.GetComponent<Text>().text = newNoteStr;
                 newNote.transform.SetParent(staveUI.transform, false);
                 newNote.transform.localPosition += new Vector3(staveUI.rect.width, 0, 0);
                 NotesMovement newNoteMovement = newNote.GetComponent<NotesMovement>();
                 newNoteMovement.SetTiming(m_AccumulatedTiming);
-                m_NotesQueue.Add(newNoteMovement);
+                m_NoteObjectsQueue.Add(newNoteMovement);
+                m_NotesQueue.Add(m_Notes[counter]);
 
                 m_AccumulatedTiming += m_Timings[counter];
 
@@ -113,15 +115,14 @@ public class NoteReader : MonoBehaviour {
     // Updates the management of tempo decay
     void UpdateTempoDecay()
     {
-        if (m_NotesQueue.Count > 0)
+        if (m_NoteObjectsQueue.Count > 0)
         {
-            if (Mathf.Approximately(m_Time, m_NotesQueue[0].Timing))
+            if (Mathf.Approximately(m_Time, m_NoteObjectsQueue[0].Timing))
             {
                 m_TimerSinceTimeStopped += Time.deltaTime;
                 if (m_TimerSinceTimeStopped > TempoDecayThreshold)
                 {
                     m_Tempo = Mathf.Max(m_Tempo - Time.deltaTime * TempoDecayRate, MinimumTempo);
-                    print(m_Tempo);
                 }
             }
             else
@@ -132,21 +133,28 @@ public class NoteReader : MonoBehaviour {
     }
 
     // Called when a key is pressed
-    public void OnKeyPress(char key)
+    public void OnKeyPress(string key)
     {
-        if (m_NotesQueue.Count > 0)
+        if (m_NotesQueue.Count > 0 && m_NotesQueue[0].Contains(key))
         {
             // Determine the increase in tempo
-            float timeAdvance = m_NotesQueue[0].Timing - m_Time;
+            float timeAdvance = m_NoteObjectsQueue[0].Timing - m_Time;
             if (timeAdvance >= TempoIncreaseThreshold)
             {
                 m_Tempo += timeAdvance * TempoIncreaseRate;
-                print(m_Tempo);
             }
 
-            GameObject note = m_NotesQueue[0].gameObject;
-            m_NotesQueue.RemoveAt(0);
-            Destroy(note);
+            // Remove the pressed key from the top of the queue
+            m_NotesQueue[0].Remove(key);
+            if (m_NotesQueue[0].Count == 0)
+            {
+                // If all keys in the top of the queue were pressed, continue
+                GameObject note = m_NoteObjectsQueue[0].gameObject;
+                m_NoteObjectsQueue.RemoveAt(0);
+                m_NotesQueue.RemoveAt(0);
+
+                Destroy(note);
+            }
         }
     }
 
@@ -164,7 +172,7 @@ public class NoteReader : MonoBehaviour {
 
     void ProcessLine(string line)
     {
-        string notes = "";
+        List<string> notes = new List<string>();
         string[] fields = line.Split(new char[] {','});
         
         if (fields.Length > 1)
@@ -176,7 +184,7 @@ public class NoteReader : MonoBehaviour {
 
                 for (int i = 1; i < fields.Length; i++)
                 {
-                    notes += fields[i].Trim().ToUpper();
+                    notes.Add(fields[i].Trim().ToUpper());
                 }
 
                 m_Notes.Add(notes);

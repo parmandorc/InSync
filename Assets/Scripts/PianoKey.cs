@@ -4,6 +4,9 @@ using UnityEngine;
 
 public class PianoKey : MonoBehaviour
 {
+    public delegate void GameEvent(string key);
+    public static event GameEvent OnKeyHit;
+
     [SerializeField]
     private Material SelectedMaterial;
 
@@ -12,6 +15,9 @@ public class PianoKey : MonoBehaviour
 
     [SerializeField]
     private PianoKey PrevKey, NextKey;
+
+    [SerializeField]
+    private string Key;
 
     private Renderer m_Renderer;
 
@@ -23,7 +29,7 @@ public class PianoKey : MonoBehaviour
     public PianoKey Prev { get { return PrevKey; } }
     public PianoKey Next { get { return NextKey; } }
     public GameObject BouncingPad { get { return transform.GetChild(0).gameObject; } }
-
+    
     // Use this for initialization
     void Start ()
     {
@@ -41,5 +47,14 @@ public class PianoKey : MonoBehaviour
     public void OnDeselect()
     {
         m_Renderer.material = m_DefaultMaterial;
+    }
+
+    // Called when this key is pressed
+    public void OnHitKey()
+    {
+        if (OnKeyHit != null)
+        {
+            OnKeyHit(Key);
+        }
     }
 }

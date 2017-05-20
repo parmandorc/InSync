@@ -7,6 +7,7 @@ using UnityEngine;
 public class hitNote : MonoBehaviour {
 
     public AudioSource audio; 
+
 	// Use this for initialization
 	void Start () {
         audio = GetComponent<AudioSource>();
@@ -17,10 +18,8 @@ public class hitNote : MonoBehaviour {
         if(other.name == "Player")
         {
             audio.Play();
-            print("hit");
         }
 
-
-        //Destroy(other.gameObject);
+        transform.parent.gameObject.GetComponent<PianoKey>().OnHitKey();
     }
 }
