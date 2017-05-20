@@ -8,9 +8,6 @@ public class PianoKey : MonoBehaviour
     public static event GameEvent OnKeyHit;
 
     [SerializeField]
-    private Material SelectedMaterial;
-
-    [SerializeField]
     private Transform KeyWaypoint;
 
     [SerializeField]
@@ -21,8 +18,11 @@ public class PianoKey : MonoBehaviour
 
     private Renderer m_Renderer;
 
-    // The default material of the key
-    private Material m_DefaultMaterial;
+    // The default color of the key when not selected
+    private Color m_DefaultColor;
+
+    // A stack of the players that have selected this key
+    private List<PlayerController> m_PlayersSelected;
 
     // Getters
     public Transform Waypoint { get { return KeyWaypoint; } }
@@ -34,19 +34,22 @@ public class PianoKey : MonoBehaviour
     void Start ()
     {
         m_Renderer = GetComponent<Renderer>();
-        m_DefaultMaterial = m_Renderer.material;
+        m_DefaultColor = m_Renderer.material.color;
+        m_PlayersSelected = new List<PlayerController>();
 	}
 
     // Called when this becomes the key selected by the player
-    public void OnSelect()
+    public void OnSelect(PlayerController player)
     {
-        m_Renderer.material = SelectedMaterial;
+        m_PlayersSelected.Insert(0, player);
+        m_Renderer.material.color = player.playerColor;
     }
 
     // Called when this stops being the key that is selected by the player
-    public void OnDeselect()
+    public void OnDeselect(PlayerController player)
     {
-        m_Renderer.material = m_DefaultMaterial;
+        m_PlayersSelected.Remove(player);
+        m_Renderer.material.color = (m_PlayersSelected.Count > 0) ? m_PlayersSelected[0].playerColor : m_DefaultColor;
     }
 
     // Called when this key is pressed

@@ -6,10 +6,11 @@ using UnityStandardAssets.Characters.ThirdPerson;
 [RequireComponent(typeof(ThirdPersonCharacter))]
 public class PlayerController : MonoBehaviour
 {
+    [SerializeField, Range(1,4)]
+    private int PlayerID = 1;
 
-    [Range(1,4)]
-    public int playerID = 1; 
-
+    [SerializeField]
+    private Color PlayerColor;
 
     [SerializeField]
     // The distance at which the player is considered to have arrived at the target waypoint
@@ -22,9 +23,12 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private PianoKey StartingKey;
 
-    public ThirdPersonCharacter m_Character;
+    private ThirdPersonCharacter m_Character;
 
+    // Getters
     public PianoKey SelectedKey { get; private set; }
+    public Color playerColor { get { return PlayerColor; } }
+    public int playerID { get { return PlayerID; } }
 
 	// Use this for initialization
 	void Start()
@@ -37,7 +41,7 @@ public class PlayerController : MonoBehaviour
 	// Update is called once per frame
 	void Update()
     {
-        float waypointInput = Input.GetAxis("Horizontal" + playerID);
+        float waypointInput = Input.GetAxis("Horizontal" + PlayerID);
        
         // Choose a new target waypoint if already at the current target
         float distanceToTarget = Vector3.Distance(transform.position, SelectedKey.Waypoint.position);
@@ -63,13 +67,13 @@ public class PlayerController : MonoBehaviour
         if (direction.magnitude < WaypointDistanceThreshold)
             direction = Vector3.zero;
 
-        m_Character.Move(direction, false, Input.GetButtonDown("Jump" + playerID));
+        m_Character.Move(direction, false, Input.GetButtonDown("Jump" + PlayerID));
 	}
 
     private void SelectKey(PianoKey newKey)
     {
-        if (SelectedKey != null) SelectedKey.OnDeselect();
+        if (SelectedKey != null) SelectedKey.OnDeselect(this);
         SelectedKey = newKey;
-        SelectedKey.OnSelect();
+        SelectedKey.OnSelect(this);
     }
 }
