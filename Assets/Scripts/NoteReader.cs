@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class NoteReader : MonoBehaviour {
 
     [SerializeField]
-    // The number of seconds ahead the notes are displayed
+    // The number of beats ahead the notes are displayed
     private float WindowSize = 5.0f;
 
     [SerializeField]
@@ -20,7 +20,7 @@ public class NoteReader : MonoBehaviour {
     private float TempoDecayRate = 0.1f;
 
     [SerializeField]
-    // The maximum time the player can be delayed on pressing a key without the tempo decaying
+    // The maximum beats the player can be delayed on pressing a key without the tempo decaying
     private float TempoDecayThreshold = 0.5f;
 
     [SerializeField]
@@ -28,7 +28,7 @@ public class NoteReader : MonoBehaviour {
     private float TempoIncreaseRate = 1.0f;
 
     [SerializeField]
-    // The maximum time the player can press a key in advance without the tempo being increased
+    // The maximum beats the player can press a key in advance without the tempo being increased
     private float TempoIncreaseThreshold = 0.5f;
 
     [SerializeField]
@@ -57,7 +57,7 @@ public class NoteReader : MonoBehaviour {
     public float windowSize { get { return WindowSize; } }
 
     // Returns the equivalent of a specific number of beats in seconds, according to the current tempo
-    public float BeatsToTime(int beats) { return (beats * 60.0f) / m_Tempo; }
+    //public float BeatsToTime(int beats) { return (beats * 60.0f) / m_Tempo; }
 
 	// Use this for initialization
 	void Start () {
@@ -80,12 +80,12 @@ public class NoteReader : MonoBehaviour {
 
         // Increment time
         if (m_NotesQueue.Count > 0)
-            m_Time = Mathf.Min(m_Time + Time.deltaTime, BeatsToTime(m_NotesQueue[0].Timing));
+            m_Time = Mathf.Min(m_Time + Time.deltaTime * m_Tempo / 60.0f, m_NotesQueue[0].Timing);
         else
-            m_Time += Time.deltaTime;
+            m_Time += Time.deltaTime * m_Tempo / 60.0f;
 
         // Spawn all notes inside the window
-        if (BeatsToTime(m_AccumulatedTiming) < m_Time + WindowSize)
+        if (m_AccumulatedTiming < m_Time + WindowSize)
         {
             if (counter < notes.Length)
             {
@@ -109,12 +109,12 @@ public class NoteReader : MonoBehaviour {
     {
         if (m_NotesQueue.Count > 0)
         {
-            if (Mathf.Approximately(m_Time, BeatsToTime(m_NotesQueue[0].Timing)))
+            if (Mathf.Approximately(m_Time, m_NotesQueue[0].Timing))
             {
                 m_TimerSinceTimeStopped += Time.deltaTime;
                 if (m_TimerSinceTimeStopped > TempoDecayThreshold)
                 {
-                    m_Tempo -= Time.deltaTime * TempoDecayThreshold;
+                    m_Tempo -= Time.deltaTime * TempoDecayRate;
                     print(m_Tempo);
                 }
             }
@@ -131,7 +131,7 @@ public class NoteReader : MonoBehaviour {
         if (m_NotesQueue.Count > 0)
         {
             // Determine the increase in tempo
-            float timeAdvance = BeatsToTime(m_NotesQueue[0].Timing) - m_Time;
+            float timeAdvance = m_NotesQueue[0].Timing - m_Time;
             if (timeAdvance >= TempoIncreaseThreshold)
             {
                 m_Tempo += timeAdvance * TempoIncreaseRate;

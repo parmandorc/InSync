@@ -24,7 +24,7 @@ public class NotesMovement : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-        trans.anchoredPosition = new Vector2((musicController.BeatsToTime(m_Timing) - musicController.SongTime) * m_StaveUI.rect.width / musicController.windowSize, 0);
+        trans.anchoredPosition = new Vector2((m_Timing - musicController.SongTime) * m_StaveUI.rect.width / musicController.windowSize, 0);
 
         // Destroy when out of the screen
         if (trans.position.x < 0)
