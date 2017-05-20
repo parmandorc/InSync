@@ -14,7 +14,7 @@ public class hitNote : MonoBehaviour {
 	
     void OnTriggerEnter(Collider other)
     {
-        if(other.name == "Player")
+        if(other.GetComponent<PlayerController>() != null)
         {
             audio.Play();
             print("hit");

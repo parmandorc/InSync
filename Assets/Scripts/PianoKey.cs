@@ -13,7 +13,7 @@ public class PianoKey : MonoBehaviour
     [SerializeField]
     private PianoKey PrevKey, NextKey;
 
-    private Renderer m_Renderer;
+    public MeshRenderer m_Renderer;    //Renderer m_Renderer;
 
     // The default material of the key
     private Material m_DefaultMaterial;
@@ -27,14 +27,19 @@ public class PianoKey : MonoBehaviour
     // Use this for initialization
     void Start ()
     {
-        m_Renderer = GetComponent<Renderer>();
+        m_Renderer = GetComponent<MeshRenderer>();
         m_DefaultMaterial = m_Renderer.material;
 	}
 
     // Called when this becomes the key selected by the player
     public void OnSelect()
     {
-        m_Renderer.material = SelectedMaterial;
+       if(m_Renderer != null)
+        {
+            m_Renderer.material = SelectedMaterial;
+
+        }
+       
     }
 
     // Called when this stops being the key that is selected by the player
