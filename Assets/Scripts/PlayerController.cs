@@ -33,7 +33,7 @@ public class PlayerController : MonoBehaviour
 	void Update()
     {
         // The player input for moving
-        float waypointInput = Input.GetAxis("Horizontal");
+        float waypointInput = Input.GetAxis("Horizontal1");
 
         // Choose a new target waypoint if already at the current target
         float distanceToTarget = Vector3.Distance(transform.position, SelectedKey.Waypoint.position);

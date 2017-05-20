@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class playSound : MonoBehaviour {
 
-    public AudioSource key;
+   // public AudioSource key;
 
 	// Use this for initialization
 	void Start () {
@@ -15,13 +15,13 @@ public class playSound : MonoBehaviour {
 	void Update () {
 
 
-        key.Play();
+     //   key.Play();
 	}
 
     void playKey(AudioSource sound)
     {
-
-        sound.Play();
+        print("playing sound");
+        //sound.Play();
 
     }
 }
