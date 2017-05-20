@@ -17,13 +17,15 @@ public class PlayerController : MonoBehaviour
     private float WaypointDistanceThreshold = 0.15f;
 
     [SerializeField]
-    // The distance from the current target at which the player can choose the next waypoint
-    private float NewWaypointDistanceThreshold = 0.5f;
+    // The minimum time that has to pass to change the selected key
+    private float KeyChangeMinTime = 0.25f;
 
     [SerializeField]
     private PianoKey StartingKey;
 
     private ThirdPersonCharacter m_Character;
+
+    private float m_TimerForWaypointChange;
 
     // Getters
     public PianoKey SelectedKey { get; private set; }
@@ -43,11 +45,10 @@ public class PlayerController : MonoBehaviour
     {
         float waypointInput = Input.GetAxis("Horizontal" + PlayerID);
        
-        // Choose a new target waypoint if already at the current target
-        float distanceToTarget = Vector3.Distance(transform.position, SelectedKey.Waypoint.position);
-        if (distanceToTarget < NewWaypointDistanceThreshold)
+        // Choose a new target waypoint
+        if (!Mathf.Approximately(waypointInput, 0))
         {
-            if (!Mathf.Approximately(waypointInput, 0.0f))
+            if (m_TimerForWaypointChange <= 0.0f)
             {
                 if (waypointInput > 0.0f && SelectedKey.Next != null)
                 {
@@ -58,6 +59,12 @@ public class PlayerController : MonoBehaviour
                     SelectKey(SelectedKey.Prev);
                 }
             }
+
+            m_TimerForWaypointChange = Mathf.Max(m_TimerForWaypointChange - Time.deltaTime, 0.0f);
+        }
+        else
+        {
+            m_TimerForWaypointChange = 0.0f;
         }
 
         // Get direction vector towards target waypoint
@@ -75,5 +82,6 @@ public class PlayerController : MonoBehaviour
         if (SelectedKey != null) SelectedKey.OnDeselect(this);
         SelectedKey = newKey;
         SelectedKey.OnSelect(this);
+        m_TimerForWaypointChange = KeyChangeMinTime;
     }
 }
