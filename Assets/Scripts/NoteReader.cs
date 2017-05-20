@@ -66,7 +66,7 @@ public class NoteReader : MonoBehaviour {
         m_Notes = new List<List<string>>();
         m_Timings = new List<int>();
 
-        ReadFile();
+        ReadFile("1.csv");
     }
 
     // Use this for initialization
@@ -158,10 +158,10 @@ public class NoteReader : MonoBehaviour {
         }
     }
 
-    void ReadFile()
+    void ReadFile(string file)
     {
         string path = System.IO.Path.Combine(Application.dataPath, "SongsData");
-        path = System.IO.Path.Combine(path, "test.csv");
+        path = System.IO.Path.Combine(path, file);
 
         string[] lines = System.IO.File.ReadAllLines(path);
         foreach (string line in lines)

@@ -9,6 +9,9 @@ public class PianoKey : MonoBehaviour
     public static event GameEvent OnKeyHit;
 
     [SerializeField]
+    private GameObject KeyMesh;
+
+    [SerializeField]
     private Transform KeyWaypoint;
 
     [SerializeField]
@@ -17,6 +20,7 @@ public class PianoKey : MonoBehaviour
     [SerializeField]
     private string Key;
 
+    // The renderer of the key mesh
     private Renderer m_Renderer;
 
     // The default color of the key when not selected
@@ -36,7 +40,7 @@ public class PianoKey : MonoBehaviour
     // Use this for initialization
     void Start ()
     {
-        m_Renderer = GetComponent<Renderer>();
+        m_Renderer = KeyMesh.GetComponent<Renderer>();
         m_DefaultColor = m_Renderer.material.color;
         m_PlayersSelected = new List<PlayerController>();
         m_KeySound = GetComponent<AudioSource>();
