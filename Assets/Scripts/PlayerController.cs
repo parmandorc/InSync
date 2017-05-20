@@ -37,10 +37,8 @@ public class PlayerController : MonoBehaviour
 	// Update is called once per frame
 	void Update()
     {
-       
         float waypointInput = Input.GetAxis("Horizontal" + playerID);
        
-
         // Choose a new target waypoint if already at the current target
         float distanceToTarget = Vector3.Distance(transform.position, SelectedKey.Waypoint.position);
         if (distanceToTarget < NewWaypointDistanceThreshold)
@@ -65,9 +63,7 @@ public class PlayerController : MonoBehaviour
         if (direction.magnitude < WaypointDistanceThreshold)
             direction = Vector3.zero;
 
-        
         m_Character.Move(direction, false, Input.GetButtonDown("Jump" + playerID));
-
 	}
 
     private void SelectKey(PianoKey newKey)
