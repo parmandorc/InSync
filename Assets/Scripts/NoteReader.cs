@@ -16,6 +16,9 @@ public class NoteReader : MonoBehaviour {
     private uint InitialTempo = 120;
 
     [SerializeField]
+    private uint MinimumTempo = 30;
+
+    [SerializeField]
     // The rate at which the tempo decays while the track is stopped
     private float TempoDecayRate = 0.1f;
 
@@ -114,7 +117,7 @@ public class NoteReader : MonoBehaviour {
                 m_TimerSinceTimeStopped += Time.deltaTime;
                 if (m_TimerSinceTimeStopped > TempoDecayThreshold)
                 {
-                    m_Tempo -= Time.deltaTime * TempoDecayRate;
+                    m_Tempo = Mathf.Max(m_Tempo - Time.deltaTime * TempoDecayRate, MinimumTempo);
                     print(m_Tempo);
                 }
             }
