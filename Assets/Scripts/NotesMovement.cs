@@ -6,12 +6,10 @@ public class NotesMovement : MonoBehaviour {
 
     private RectTransform trans;
     private float speed;
+    private GameObject musicController;
 
-    public GameObject musicController;
-
-
-	// Use this for initialization
-	void Start () {
+    // Use this for initialization
+    void Start () {
         trans = GetComponent<RectTransform>();
 
         musicController = GameObject.FindGameObjectWithTag("MusicController");

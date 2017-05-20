@@ -5,9 +5,10 @@ using UnityEngine.UI;
 
 public class NoteReader : MonoBehaviour {
 
+    private GameObject staveUI;
+
     public float uiOfset = 50; 
 
-    public GameObject staveUI;
 
     public GameObject noteInstance;
 
@@ -28,6 +29,7 @@ public class NoteReader : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+        staveUI = GameObject.FindGameObjectWithTag("Stave");
         timer = 1;
 	}
 	
@@ -38,23 +40,21 @@ public class NoteReader : MonoBehaviour {
 
         if (timer <= 0)
         {
-            if(counter < notes.Length)
+            if (counter < notes.Length)
             {
 
-                
+
                 newNote = Instantiate(noteInstance, new Vector3(transform.position.x , transform.position.y, transform.position.z), Quaternion.identity);
 
-                //newNote.GetComponent<Text>().text = notes[counter].ToString();
-
-                newNote.transform.GetChild(0).gameObject.GetComponent <Text>().text = notes[counter].ToString();    //= notes[counter].ToString();
-                newNote.transform.SetParent(staveUI.transform,false);
+                newNote.transform.GetChild(0).gameObject.GetComponent<Text>().text = notes[counter].ToString();    //= notes[counter].ToString();
+                newNote.transform.SetParent(staveUI.transform, false);
                 newNote.transform.localPosition += new Vector3(uiOfset, 0, 0);
 
                 counter++;
                 //timer = 1;
                 print(timings[counter]);
-                timer = timings[counter]/2;
-                
+                timer = timings[counter] / 2;
+
             }
         }
 

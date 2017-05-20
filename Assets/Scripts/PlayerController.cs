@@ -16,8 +16,8 @@ public class PlayerController : MonoBehaviour
 
     private ThirdPersonCharacter m_Character;
 
-    [SerializeField]
-    private Waypoint TargetWaypoint;
+    //[SerializeField]
+    public Waypoint TargetWaypoint;
 
 	// Use this for initialization
 	void Start()
@@ -59,5 +59,6 @@ public class PlayerController : MonoBehaviour
             direction = Vector3.zero;
 
         m_Character.Move(direction, false, Input.GetButtonDown("Jump"));
+
 	}
 }
