@@ -2,24 +2,18 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-
-[RequireComponent(typeof(AudioSource))]
-public class hitNote : MonoBehaviour {
-
-    public AudioSource audio; 
+public class hitNote : MonoBehaviour
+{
+    private PianoKey key; 
 
 	// Use this for initialization
-	void Start () {
-        audio = GetComponent<AudioSource>();
-	}
+	void Start ()
+    {
+        key = transform.parent.gameObject.GetComponent<PianoKey>();
+    }
 	
     void OnTriggerEnter(Collider other)
     {
-        if(other.GetComponent<PlayerController>() != null)
-        {
-            audio.Play();
-        }
-
-        transform.parent.gameObject.GetComponent<PianoKey>().OnHitKey();
+        key.OnHitKey();
     }
 }

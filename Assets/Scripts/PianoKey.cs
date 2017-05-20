@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(AudioSource))]
 public class PianoKey : MonoBehaviour
 {
     public delegate void GameEvent(string key);
@@ -24,6 +25,8 @@ public class PianoKey : MonoBehaviour
     // A stack of the players that have selected this key
     private List<PlayerController> m_PlayersSelected;
 
+    private AudioSource m_KeySound;
+
     // Getters
     public Transform Waypoint { get { return KeyWaypoint; } }
     public PianoKey Prev { get { return PrevKey; } }
@@ -36,6 +39,7 @@ public class PianoKey : MonoBehaviour
         m_Renderer = GetComponent<Renderer>();
         m_DefaultColor = m_Renderer.material.color;
         m_PlayersSelected = new List<PlayerController>();
+        m_KeySound = GetComponent<AudioSource>();
 	}
 
     // Called when this becomes the key selected by the player
@@ -55,6 +59,8 @@ public class PianoKey : MonoBehaviour
     // Called when this key is pressed
     public void OnHitKey()
     {
+        m_KeySound.Play();
+
         if (OnKeyHit != null)
         {
             OnKeyHit(Key);
