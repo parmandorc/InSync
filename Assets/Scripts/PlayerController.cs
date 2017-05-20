@@ -6,6 +6,11 @@ using UnityStandardAssets.Characters.ThirdPerson;
 [RequireComponent(typeof(ThirdPersonCharacter))]
 public class PlayerController : MonoBehaviour
 {
+
+    [Range(1,4)]
+    public int playerID = 1; 
+
+
     [SerializeField]
     // The distance at which the player is considered to have arrived at the target waypoint
     private float WaypointDistanceThreshold = 0.15f;
@@ -17,7 +22,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private PianoKey StartingKey;
 
-    private ThirdPersonCharacter m_Character;
+    public ThirdPersonCharacter m_Character;
 
     public PianoKey SelectedKey { get; private set; }
 
@@ -32,8 +37,9 @@ public class PlayerController : MonoBehaviour
 	// Update is called once per frame
 	void Update()
     {
-        // The player input for moving
-        float waypointInput = Input.GetAxis("Horizontal1");
+       
+        float waypointInput = Input.GetAxis("Horizontal" + playerID);
+       
 
         // Choose a new target waypoint if already at the current target
         float distanceToTarget = Vector3.Distance(transform.position, SelectedKey.Waypoint.position);
@@ -59,7 +65,8 @@ public class PlayerController : MonoBehaviour
         if (direction.magnitude < WaypointDistanceThreshold)
             direction = Vector3.zero;
 
-        m_Character.Move(direction, false, Input.GetButtonDown("Jump"));
+        
+        m_Character.Move(direction, false, Input.GetButtonDown("Jump" + playerID));
 
 	}
 

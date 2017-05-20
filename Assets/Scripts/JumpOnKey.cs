@@ -30,11 +30,11 @@ public class JumpOnKey : MonoBehaviour {
         rb = GetComponent<Rigidbody>();
         pc = GetComponent<PlayerController>();
 
-        currentWp = pc.SelectedKey.Waypoint.gameObject;
-        currentKey = pc.SelectedKey.BouncingPad;
+       //currentWp = pc.SelectedKey.Waypoint.gameObject;
+       //currentKey = pc.SelectedKey.BouncingPad;
 
         startTime = Time.time;
-        journeyLength = Vector3.Distance(currentWp.transform.position, currentKey.transform.position);
+        //journeyLength = Vector3.Distance(currentWp.transform.position, currentKey.transform.position);
     }
 	
 	// Update is called once per frame
@@ -44,10 +44,11 @@ public class JumpOnKey : MonoBehaviour {
 
         if(currentJumpState == jumpStates.notJumping)
         {
-            if (Input.GetButtonDown("Jump"))
+            if (Input.GetButtonDown("Jump"+ pc.playerID))
             {
                 currentJumpState = jumpStates.forwardJumping;
                 startTime = Time.time;
+                journeyLength = Vector3.Distance(currentWp.transform.position, currentKey.transform.position);
             }
         }
 

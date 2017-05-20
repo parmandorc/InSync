@@ -40,7 +40,12 @@ public class PianoKey : MonoBehaviour
     // Called when this becomes the key selected by the player
     public void OnSelect()
     {
-        m_Renderer.material = SelectedMaterial;
+       if(m_Renderer != null)
+        {
+            m_Renderer.material = SelectedMaterial;
+
+        }
+       
     }
 
     // Called when this stops being the key that is selected by the player
