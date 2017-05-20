@@ -5,67 +5,75 @@ using UnityEngine.UI;
 
 public class NoteReader : MonoBehaviour {
 
-    private GameObject staveUI;
+    [SerializeField]
+    // The number of seconds ahead the notes are displayed
+    private float WindowSize = 5.0f;
 
-    public float uiOfset = 50; 
+    [SerializeField]
+    private GameObject noteInstance;
 
+    [SerializeField]
+    private string notes = "abbabababa";
 
-    public GameObject noteInstance;
+    [SerializeField]
+    private float[] timings = { 1,2,3,4,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
 
-    [Range(0.3f,5)]
-    public float tempo = 0.3f;
+    private int counter = 0;
 
+    private List<NotesMovement> m_NotesQueue;
 
-    public string notes = "abbabababa";
-    public float[] timings = { 1,2,3,4,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1 };
+    private float m_AccumulatedTiming;
 
+    // The time that has passed since the beginning of the song
+    private float m_Time;
 
-    public int counter = 0;
+    private RectTransform staveUI;
 
-    public float timer;
-
-    GameObject newNote;
-
+    // Getters
+    public float SongTime { get { return m_Time; } }
+    public float windowSize { get { return WindowSize; } }
 
 	// Use this for initialization
 	void Start () {
-        staveUI = GameObject.FindGameObjectWithTag("Stave");
-        timer = 1;
-	}
+        staveUI = GameObject.FindGameObjectWithTag("Stave").GetComponent<RectTransform>();
+        m_NotesQueue = new List<NotesMovement>();
+        m_AccumulatedTiming = timings[0];
+    }
 	
 	// Update is called once per frame
 	void Update () {
 
-    
+        // Increment time
+        if (m_NotesQueue.Count > 0)
+            m_Time = Mathf.Min(m_Time + Time.deltaTime, m_NotesQueue[0].Timing);
+        else
+            m_Time += Time.deltaTime;
 
-        if (timer <= 0)
+        // Spawn all notes inside the window
+        if (m_AccumulatedTiming < m_Time + WindowSize)
         {
             if (counter < notes.Length)
             {
-
-
-                newNote = Instantiate(noteInstance, new Vector3(transform.position.x , transform.position.y, transform.position.z), Quaternion.identity);
-
-                newNote.transform.GetChild(0).gameObject.GetComponent<Text>().text = notes[counter].ToString();    //= notes[counter].ToString();
+                GameObject newNote = Instantiate(noteInstance, Vector3.zero, Quaternion.identity);
+                newNote.transform.GetChild(0).gameObject.GetComponent<Text>().text = notes[counter].ToString();
                 newNote.transform.SetParent(staveUI.transform, false);
-                newNote.transform.localPosition += new Vector3(uiOfset, 0, 0);
+                newNote.transform.localPosition += new Vector3(staveUI.rect.width, 0, 0);
+                NotesMovement newNoteMovement = newNote.GetComponent<NotesMovement>();
+                newNoteMovement.SetTiming(m_AccumulatedTiming);
+                m_NotesQueue.Add(newNoteMovement);
+
+                m_AccumulatedTiming += timings[counter + 1];
 
                 counter++;
-                //timer = 1;
-                print(timings[counter]);
-                timer = timings[counter] / 2;
-
             }
         }
 
-
-
-
-        timer -= tempo / 50;             // old working without timings 30;
-        	
-	}
-
-    // Changing tempo functions 
-    void increaseTempo(float value){ tempo += value; }
-    void decreaseTempo(float value){ tempo -= value; }
+        // Until pressing keys is implemented...
+        if (Input.GetKeyDown(KeyCode.Space) && m_NotesQueue.Count > 0)
+        {
+            GameObject note = m_NotesQueue[0].gameObject;
+            m_NotesQueue.RemoveAt(0);
+            Destroy(note);
+        }
+    }
 }
