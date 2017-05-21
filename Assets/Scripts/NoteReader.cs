@@ -119,13 +119,10 @@ public class NoteReader : MonoBehaviour
                 if (counter < m_Notes.Count)
                 {
                     GameObject newNote = Instantiate(noteInstance, Vector3.zero, Quaternion.identity);
-                    string newNoteStr = "";
-                    foreach (string str in m_Notes[counter]) newNoteStr += str;
-                    newNote.transform.GetChild(0).gameObject.GetComponent<Text>().text = newNoteStr;
                     newNote.transform.SetParent(staveUI.transform, false);
                     newNote.transform.localPosition += new Vector3(staveUI.rect.width, 0, 0);
                     NotesMovement newNoteMovement = newNote.GetComponent<NotesMovement>();
-                    newNoteMovement.SetTiming(m_AccumulatedTiming);
+                    newNoteMovement.Init(m_Notes[counter], m_AccumulatedTiming);
                     m_NoteObjectsQueue.Add(newNoteMovement);
                     m_NotesQueue.Add(m_Notes[counter]);
 
@@ -170,6 +167,7 @@ public class NoteReader : MonoBehaviour
             }
 
             // Remove the pressed key from the top of the queue
+            m_NoteObjectsQueue[0].OnKeyPressed(key);
             m_NotesQueue[0].Remove(key);
             if (m_NotesQueue[0].Count == 0)
             {

@@ -1,8 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
-public class NotesMovement : MonoBehaviour {
+public class NotesMovement : MonoBehaviour
+{
+    [SerializeField]
+    private Text NoteElementUI;
 
     private RectTransform trans;
     private float speed;
@@ -10,16 +14,37 @@ public class NotesMovement : MonoBehaviour {
     private int m_Timing;
     private RectTransform m_StaveUI;
 
+    private Dictionary<string, Text> m_NoteElements;
+
     public int Timing { get { return m_Timing; } }
 
     // Use this for initialization
-    void Start () {
+    void Start ()
+    {
         trans = GetComponent<RectTransform>();
         musicController = GameObject.FindGameObjectWithTag("MusicController").GetComponent<NoteReader>();
         m_StaveUI = transform.parent.GetComponent<RectTransform>();
 	}
 	
-    public void SetTiming(int timing) { m_Timing = timing; }
+    public void Init(List<string> notes, int timing)
+    {
+        m_NoteElements = new Dictionary<string, Text>();
+
+        foreach (string note in notes)
+        {
+            Text noteText = Instantiate<Text>(NoteElementUI);
+            noteText.transform.SetParent(transform);
+            noteText.text = note;
+            m_NoteElements.Add(note, noteText);
+        }
+
+        m_Timing = timing;
+    }
+
+    public void OnKeyPressed(string key)
+    {
+        m_NoteElements[key].text = "";
+    }
 
 	// Update is called once per frame
 	void Update () {
