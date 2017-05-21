@@ -27,6 +27,8 @@ public class PlayerController : MonoBehaviour
 
     private float m_TimerForWaypointChange;
 
+    private JumpOnKey m_JumpComponent;
+
     // Getters
     public PianoKey SelectedKey { get; private set; }
     public Color playerColor { get { return PlayerColor; } }
@@ -38,6 +40,7 @@ public class PlayerController : MonoBehaviour
         SelectKey((StartingKey != null) ? StartingKey : FindObjectOfType<PianoKey>());
 
         m_Character = GetComponent<ThirdPersonCharacter>();
+        m_JumpComponent = GetComponent<JumpOnKey>();
 	}
 	
 	// Update is called once per frame
@@ -46,7 +49,7 @@ public class PlayerController : MonoBehaviour
         float waypointInput = Input.GetAxis("Horizontal" + PlayerID);
        
         // Choose a new target waypoint
-        if (!Mathf.Approximately(waypointInput, 0))
+        if (m_JumpComponent.CurrentJumpState == JumpOnKey.jumpStates.notJumping && !Mathf.Approximately(waypointInput, 0))
         {
             if (m_TimerForWaypointChange <= 0.0f)
             {
@@ -68,11 +71,15 @@ public class PlayerController : MonoBehaviour
         }
 
         // Get direction vector towards target waypoint
-        Vector3 direction = SelectedKey.Waypoint.position - transform.position;
-        direction.y = 0.0f;
-        direction = Vector3.ClampMagnitude(direction, 1.0f);
-        if (direction.magnitude < WaypointDistanceThreshold)
-            direction = Vector3.zero;
+        Vector3 direction = Vector3.forward;
+        if (m_JumpComponent.CurrentJumpState == JumpOnKey.jumpStates.notJumping)
+        {
+            direction = SelectedKey.Waypoint.position - transform.position;
+            direction.y = 0.0f;
+            direction = Vector3.ClampMagnitude(direction, 1.0f);
+            if (direction.magnitude < WaypointDistanceThreshold)
+                direction = Vector3.zero;
+        }
 
         m_Character.Move(direction, false, Input.GetButtonDown("Jump" + PlayerID));
 	}

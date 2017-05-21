@@ -19,11 +19,15 @@ public class JumpOnKey : MonoBehaviour {
     private bool isJumping = false;
     private bool isJumpDown = true;
 
-    private enum jumpStates{ notJumping, forwardJumping, backwardJumping };
-    jumpStates currentJumpState = jumpStates.notJumping; 
+    public enum jumpStates{ notJumping, forwardJumping, backwardJumping };
+    private jumpStates currentJumpState = jumpStates.notJumping; 
 
     public Rigidbody rb;
     public PlayerController pc;
+
+    public jumpStates CurrentJumpState { get { return currentJumpState; } }
+
+    private Vector3 m_PositionAtJumpStart;
 
 	// Use this for initialization
 	void Start () {
@@ -44,6 +48,8 @@ public class JumpOnKey : MonoBehaviour {
 
         if(currentJumpState == jumpStates.notJumping)
         {
+            m_PositionAtJumpStart = transform.position;
+
             if (Input.GetButtonDown("Jump"+ pc.playerID))
             {
                 currentJumpState = jumpStates.forwardJumping;
@@ -55,7 +61,7 @@ public class JumpOnKey : MonoBehaviour {
         if(currentJumpState == jumpStates.forwardJumping)
         {
             float distCovered = (Time.time - startTime) * speed;
-            rb.MovePosition(hermit(currentWp.transform.position, currentKey.transform.position, new Vector3(0, ang_scl, 0), new Vector3(0, ang_scl, 0), distCovered));
+            rb.MovePosition(hermit(m_PositionAtJumpStart, currentKey.transform.position, new Vector3(0, ang_scl, 0), new Vector3(0, ang_scl, 0), distCovered));
             if (distCovered >= 1)
             {
                 //rb.MovePosition(currentWp.transform.position);
