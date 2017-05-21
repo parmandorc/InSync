@@ -114,6 +114,10 @@ public class NoteReader : MonoBehaviour
         ReadFile(songFile);
 
         // Reset gameplay data
+        if (ScoreUI != null)
+        {
+            ScoreUI.text = (0).ToString();
+        }
         m_Time = 0.0f;
         m_AccumulatedTiming = Mathf.CeilToInt(WindowSize);
         m_Tempo = InitialTempo;
@@ -245,7 +249,7 @@ public class NoteReader : MonoBehaviour
             }
             else // Key miss
             {
-                m_Score -= ScorePerMissAmount;
+                m_Score = Mathf.Max(m_Score - ScorePerMissAmount, 0);
             }
 
             if (ScoreUI != null) // Update score UI
