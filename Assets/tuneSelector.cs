@@ -17,7 +17,7 @@ public class tuneSelector : MonoBehaviour {
     public void selector(string newTune)
     {
         GameObject musicController = GameObject.FindGameObjectWithTag("MusicController");
-        musicController.GetComponent<NoteReader>().ReadFile(newTune);
+        musicController.GetComponent<NoteReader>().Init(newTune);
         print(newTune);
     }
 }

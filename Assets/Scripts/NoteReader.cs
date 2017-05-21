@@ -41,7 +41,7 @@ public class NoteReader : MonoBehaviour
 
     private List<int> m_Timings;
     
-    private int counter = 0;
+    private int counter;
 
     private List<NotesMovement> m_NoteObjectsQueue;
 
@@ -59,6 +59,8 @@ public class NoteReader : MonoBehaviour
 
     private float m_TimerSinceTimeStopped;
 
+    private bool m_IsPaused = true;
+
     // Getters
     public float SongTime { get { return m_Time; } }
     public float windowSize { get { return WindowSize; } }
@@ -67,55 +69,77 @@ public class NoteReader : MonoBehaviour
     {
         PianoKey.OnKeyHit += OnKeyPress;
 
+        // The raw data song
         m_Notes = new List<List<string>>();
         m_Timings = new List<int>();
-    }
 
-    // Use this for initialization
-    void Start ()
-    {
+        // The current state of the song
         m_NoteObjectsQueue = new List<NotesMovement>();
         m_NotesQueue = new List<List<string>>();
-        m_AccumulatedTiming = Mathf.CeilToInt(WindowSize);
-        m_Tempo = InitialTempo;
     }
 	
+    // Resets the game state to start a new song
+    public void Init(string songFile)
+    {
+        // Reset raw data song
+        m_Notes.Clear();
+        m_Timings.Clear();
+
+        // Reset current state of the song
+        m_NoteObjectsQueue.Clear();
+        m_NotesQueue.Clear();
+
+        // Read song data
+        ReadFile(songFile);
+
+        // Reset gameplay data
+        m_Time = 0.0f;
+        m_AccumulatedTiming = Mathf.CeilToInt(WindowSize);
+        m_Tempo = InitialTempo;
+        counter = 0;
+        m_IsPaused = false;
+    }
+
 	// Update is called once per frame
 	void Update ()
     {
-        UpdateTempoDecay();
-
-        // Increment time
-        if (m_NoteObjectsQueue.Count > 0)
-            m_Time = Mathf.Min(m_Time + Time.deltaTime * m_Tempo / 60.0f, m_NoteObjectsQueue[0].Timing);
-        else
-            m_Time += Time.deltaTime * m_Tempo / 60.0f;
-
-        // Spawn all notes inside the window
-        if (m_AccumulatedTiming < m_Time + WindowSize)
+        if (!m_IsPaused)
         {
-            if (counter < m_Notes.Count)
+            UpdateTempoDecay();
+
+            // Increment time
+            print(m_Time);
+            if (m_NoteObjectsQueue.Count > 0)
+                m_Time = Mathf.Min(m_Time + Time.deltaTime * m_Tempo / 60.0f, m_NoteObjectsQueue[0].Timing);
+            else
+                m_Time += Time.deltaTime * m_Tempo / 60.0f;
+
+            // Spawn all notes inside the window
+            if (m_AccumulatedTiming < m_Time + WindowSize)
             {
-                GameObject newNote = Instantiate(noteInstance, Vector3.zero, Quaternion.identity);
-                string newNoteStr = "";
-                foreach (string str in m_Notes[counter]) newNoteStr += str;
-                newNote.transform.GetChild(0).gameObject.GetComponent<Text>().text = newNoteStr;
-                newNote.transform.SetParent(staveUI.transform, false);
-                newNote.transform.localPosition += new Vector3(staveUI.rect.width, 0, 0);
-                NotesMovement newNoteMovement = newNote.GetComponent<NotesMovement>();
-                newNoteMovement.SetTiming(m_AccumulatedTiming);
-                m_NoteObjectsQueue.Add(newNoteMovement);
-                m_NotesQueue.Add(m_Notes[counter]);
+                if (counter < m_Notes.Count)
+                {
+                    GameObject newNote = Instantiate(noteInstance, Vector3.zero, Quaternion.identity);
+                    string newNoteStr = "";
+                    foreach (string str in m_Notes[counter]) newNoteStr += str;
+                    newNote.transform.GetChild(0).gameObject.GetComponent<Text>().text = newNoteStr;
+                    newNote.transform.SetParent(staveUI.transform, false);
+                    newNote.transform.localPosition += new Vector3(staveUI.rect.width, 0, 0);
+                    NotesMovement newNoteMovement = newNote.GetComponent<NotesMovement>();
+                    newNoteMovement.SetTiming(m_AccumulatedTiming);
+                    m_NoteObjectsQueue.Add(newNoteMovement);
+                    m_NotesQueue.Add(m_Notes[counter]);
 
-                m_AccumulatedTiming += m_Timings[counter];
+                    m_AccumulatedTiming += m_Timings[counter];
 
-                counter++;
+                    counter++;
+                }
             }
         }
     }
 
     // Updates the management of tempo decay
-    void UpdateTempoDecay()
+    private void UpdateTempoDecay()
     {
         if (m_NoteObjectsQueue.Count > 0)
         {
@@ -137,7 +161,7 @@ public class NoteReader : MonoBehaviour
     // Called when a key is pressed
     public void OnKeyPress(string key)
     {
-        if (m_NotesQueue.Count > 0 && m_NotesQueue[0].Contains(key))
+        if (!m_IsPaused && m_NotesQueue.Count > 0 && m_NotesQueue[0].Contains(key))
         {
             // Determine the increase in tempo
             float timeAdvance = m_NoteObjectsQueue[0].Timing - m_Time;
@@ -158,15 +182,20 @@ public class NoteReader : MonoBehaviour
                 Destroy(note);
 
                 // Check song end
-                if (OnSongEnd != null && m_NotesQueue.Count == 0)
+                if (m_NotesQueue.Count == 0)
                 {
-                    OnSongEnd();
+                    m_IsPaused = true;
+
+                    if (OnSongEnd != null)
+                    {
+                        OnSongEnd();
+                    }
                 }
             }
         }
     }
 
-    public void ReadFile(string file)
+    private void ReadFile(string file)
     {
         string path = System.IO.Path.Combine(Application.dataPath, "SongsData");
         path = System.IO.Path.Combine(path, file);
@@ -178,7 +207,7 @@ public class NoteReader : MonoBehaviour
         }
     }
 
-    void ProcessLine(string line)
+    private void ProcessLine(string line)
     {
         List<string> notes = new List<string>();
         string[] fields = line.Split(new char[] {','});

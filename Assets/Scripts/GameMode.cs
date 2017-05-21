@@ -25,11 +25,11 @@ public class GameMode : MonoBehaviour
 
     public void loadGame(string songTitle)
     {
-        musicController.ReadFile(songTitle);
-
         //sorting out UI 
         pauseMenu.SetActive(false);
         gameMenu.SetActive(true);
+
+        musicController.Init(songTitle);
     }
 
     public void pauseGame()
