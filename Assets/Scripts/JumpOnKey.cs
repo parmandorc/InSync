@@ -50,7 +50,7 @@ public class JumpOnKey : MonoBehaviour {
         {
             m_PositionAtJumpStart = transform.position;
 
-            if (Input.GetButtonDown("Jump"+ pc.playerID))
+            if (Input.GetButtonDown(pc.getEnterButton))
             {
                 currentJumpState = jumpStates.forwardJumping;
                 startTime = Time.time;

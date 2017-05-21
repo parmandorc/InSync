@@ -6,7 +6,11 @@ using UnityStandardAssets.Characters.ThirdPerson;
 [RequireComponent(typeof(ThirdPersonCharacter))]
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField, Range(1,4)]
+
+    string EnterButton;
+    string MoveAxis; 
+
+    [SerializeField, Range(1, 4)]
     private int PlayerID = 1;
 
     [SerializeField]
@@ -33,21 +37,22 @@ public class PlayerController : MonoBehaviour
     public PianoKey SelectedKey { get; private set; }
     public Color playerColor { get { return PlayerColor; } }
     public int playerID { get { return PlayerID; } }
+    public string getEnterButton { get { return EnterButton; } }
 
-	// Use this for initialization
-	void Start()
+    // Use this for initialization
+    void Start()
     {
         SelectKey((StartingKey != null) ? StartingKey : FindObjectOfType<PianoKey>());
 
         m_Character = GetComponent<ThirdPersonCharacter>();
         m_JumpComponent = GetComponent<JumpOnKey>();
-	}
-	
-	// Update is called once per frame
-	void Update()
+    }
+
+    // Update is called once per frame
+    void Update()
     {
-        float waypointInput = Input.GetAxis("Horizontal" + PlayerID);
-       
+        float waypointInput = Input.GetAxis(MoveAxis);
+
         // Choose a new target waypoint
         if (m_JumpComponent.CurrentJumpState == JumpOnKey.jumpStates.notJumping && !Mathf.Approximately(waypointInput, 0))
         {
@@ -81,8 +86,8 @@ public class PlayerController : MonoBehaviour
                 direction = Vector3.zero;
         }
 
-        m_Character.Move(direction, false, Input.GetButtonDown("Jump" + PlayerID));
-	}
+        m_Character.Move(direction, false, Input.GetButtonDown(EnterButton));
+    }
 
     private void SelectKey(PianoKey newKey)
     {
@@ -91,4 +96,13 @@ public class PlayerController : MonoBehaviour
         SelectedKey.OnSelect(this);
         m_TimerForWaypointChange = KeyChangeMinTime;
     }
+
+    public void setupCharacter(string _enterButton, string _moveAxis, Color _playerColor, PianoKey _key)
+    {
+        EnterButton = _enterButton;
+        MoveAxis = _moveAxis;
+        PlayerColor = _playerColor;
+        StartingKey = _key;
+    }
+
 }
