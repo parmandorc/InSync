@@ -99,6 +99,8 @@ public class PlayerController : MonoBehaviour
 
     public void setupCharacter(string _enterButton, string _moveAxis, Color _playerColor, PianoKey _key)
     {
+        print(_enterButton);
+        print(_moveAxis);
         EnterButton = _enterButton;
         MoveAxis = _moveAxis;
         PlayerColor = _playerColor;
