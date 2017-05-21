@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class NoteReader : MonoBehaviour {
+public class NoteReader : MonoBehaviour
+{
+    public delegate void GameEvent();
+    public static event GameEvent OnSongEnd;
 
     [SerializeField]
     // The number of beats ahead the notes are displayed
@@ -66,13 +69,11 @@ public class NoteReader : MonoBehaviour {
 
         m_Notes = new List<List<string>>();
         m_Timings = new List<int>();
-
-        ReadFile("1.csv");
     }
 
     // Use this for initialization
-    void Start () {
-        //staveUI = GameObject.FindGameObjectWithTag("Stave").GetComponent<RectTransform>();
+    void Start ()
+    {
         m_NoteObjectsQueue = new List<NotesMovement>();
         m_NotesQueue = new List<List<string>>();
         m_AccumulatedTiming = Mathf.CeilToInt(WindowSize);
@@ -80,8 +81,8 @@ public class NoteReader : MonoBehaviour {
     }
 	
 	// Update is called once per frame
-	void Update () {
-
+	void Update ()
+    {
         UpdateTempoDecay();
 
         // Increment time
@@ -155,6 +156,12 @@ public class NoteReader : MonoBehaviour {
                 m_NotesQueue.RemoveAt(0);
 
                 Destroy(note);
+
+                // Check song end
+                if (OnSongEnd != null && m_NotesQueue.Count == 0)
+                {
+                    OnSongEnd();
+                }
             }
         }
     }
