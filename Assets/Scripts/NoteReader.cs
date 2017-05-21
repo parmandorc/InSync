@@ -108,7 +108,6 @@ public class NoteReader : MonoBehaviour
             UpdateTempoDecay();
 
             // Increment time
-            print(m_Time);
             if (m_NoteObjectsQueue.Count > 0)
                 m_Time = Mathf.Min(m_Time + Time.deltaTime * m_Tempo / 60.0f, m_NoteObjectsQueue[0].Timing);
             else
@@ -182,7 +181,7 @@ public class NoteReader : MonoBehaviour
                 Destroy(note);
 
                 // Check song end
-                if (m_NotesQueue.Count == 0)
+                if (m_NotesQueue.Count <= 0 && counter >= m_Notes.Count)
                 {
                     m_IsPaused = true;
 
