@@ -41,11 +41,17 @@ public class NoteReader : MonoBehaviour
     private float ScorePerHitKeyFactor = 0.1f;
 
     [SerializeField]
+    private float ScorePerMissAmount = 25.0f;
+
+    [SerializeField]
     // The maximum amount of time that can pass between key presses two obtain a multihit bonus
     private float MultihitBonusMaxTime = 0.25f;
 
     [SerializeField]
     private float MultihitBonusAmount = 10.0f;
+
+    [SerializeField]
+    private Text ScoreUI;
 
     private List<List<string>> m_Notes;
 
@@ -184,58 +190,68 @@ public class NoteReader : MonoBehaviour
     // Called when a key is pressed
     public void OnKeyPress(string key)
     {
-        if (!m_IsPaused && m_NotesQueue.Count > 0 && m_NotesQueue[0].Contains(key))
+        if (!m_IsPaused && m_NotesQueue.Count > 0)
         {
-            if (!m_MultihitTimerElapsed) // If can get multihit bonus...
+            if (m_NotesQueue[0].Contains(key))
             {
-                if (m_TimerSinceLastMultihitStart <= 0.0f) // If this is the first key hit in a multihit, start timer;
+                if (!m_MultihitTimerElapsed) // If can get multihit bonus...
                 {
-                    m_TimerSinceLastMultihitStart = MultihitBonusMaxTime;
-                }
-                else if (m_TimerSinceLastMultihitStart > 0.0f)
-                {
-                    m_Score += MultihitBonusAmount;
-                }
-            }
-
-            // Handle score
-            m_Score += m_Tempo * ScorePerHitKeyFactor;
-
-            // Remove the pressed key from the top of the queue
-            m_NoteObjectsQueue[0].OnKeyPressed(key);
-            m_NotesQueue[0].Remove(key);
-            if (m_NotesQueue[0].Count == 0) // If all keys in the top of the queue were pressed...
-            {
-                // Handle multihit bonus timer
-                m_TimerSinceLastMultihitStart = 0.0f;
-                m_MultihitTimerElapsed = false;
-
-                GameObject note = m_NoteObjectsQueue[0].gameObject;
-                m_NoteObjectsQueue.RemoveAt(0);
-                m_NotesQueue.RemoveAt(0);
-
-                Destroy(note);
-
-                // Check song end
-                if (m_NotesQueue.Count <= 0 && counter >= m_Notes.Count)
-                {
-                    m_IsPaused = true;
-
-                    if (OnSongEnd != null)
+                    if (m_TimerSinceLastMultihitStart <= 0.0f) // If this is the first key hit in a multihit, start timer;
                     {
-                        OnSongEnd();
+                        m_TimerSinceLastMultihitStart = MultihitBonusMaxTime;
+                    }
+                    else if (m_TimerSinceLastMultihitStart > 0.0f)
+                    {
+                        m_Score += MultihitBonusAmount;
+                    }
+                }
+
+                // Handle score
+                m_Score += m_Tempo * ScorePerHitKeyFactor;
+
+                // Determine the increase in tempo
+                float timeAdvance = m_NoteObjectsQueue[0].Timing - m_Time;
+                if (timeAdvance >= TempoIncreaseThreshold)
+                {
+                    m_Tempo += timeAdvance * TempoIncreaseRate;
+                }
+
+                // Remove the pressed key from the top of the queue
+                m_NoteObjectsQueue[0].OnKeyPressed(key);
+                m_NotesQueue[0].Remove(key);
+                if (m_NotesQueue[0].Count == 0) // If all keys in the top of the queue were pressed...
+                {
+                    // Handle multihit bonus timer
+                    m_TimerSinceLastMultihitStart = 0.0f;
+                    m_MultihitTimerElapsed = false;
+
+                    GameObject note = m_NoteObjectsQueue[0].gameObject;
+                    m_NoteObjectsQueue.RemoveAt(0);
+                    m_NotesQueue.RemoveAt(0);
+
+                    Destroy(note);
+
+                    // Check song end
+                    if (m_NotesQueue.Count <= 0 && counter >= m_Notes.Count)
+                    {
+                        m_IsPaused = true;
+
+                        if (OnSongEnd != null)
+                        {
+                            OnSongEnd();
+                        }
                     }
                 }
             }
-
-            // Determine the increase in tempo
-            float timeAdvance = m_NoteObjectsQueue[0].Timing - m_Time;
-            if (timeAdvance >= TempoIncreaseThreshold)
+            else // Key miss
             {
-                m_Tempo += timeAdvance * TempoIncreaseRate;
+                m_Score -= ScorePerMissAmount;
             }
 
-            print(m_Score);
+            if (ScoreUI != null) // Update score UI
+            {
+                ScoreUI.text = ((int)m_Score).ToString();
+            }
         }
     }
 
