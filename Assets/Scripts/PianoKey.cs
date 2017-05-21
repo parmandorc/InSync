@@ -31,12 +31,20 @@ public class PianoKey : MonoBehaviour
 
     private AudioSource m_KeySound;
 
+    [SerializeField]
+    private bool isTriggered = false;
+
+
     // Getters
     public Transform Waypoint { get { return KeyWaypoint; } }
     public PianoKey Prev { get { return PrevKey; } }
     public PianoKey Next { get { return NextKey; } }
     public GameObject BouncingPad { get { return transform.GetChild(0).gameObject; } }
+    public bool IsTriggered { get { return isTriggered; } }
     
+    //setter 
+    public void SetIsTriggered(bool value) { isTriggered = value; }
+
     // Use this for initialization
     void Start ()
     {
@@ -70,5 +78,8 @@ public class PianoKey : MonoBehaviour
         {
             OnKeyHit(Key);
         }
+
+        //for Rotation
+        isTriggered = true;
     }
 }
