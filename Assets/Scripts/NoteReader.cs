@@ -220,7 +220,7 @@ public class NoteReader : MonoBehaviour
 
                 for (int i = 1; i < fields.Length; i++)
                 {
-                    notes.Add(fields[i].Trim().ToUpper());
+                    notes.Add(fields[i].Trim());
                 }
 
                 m_Notes.Add(notes);
