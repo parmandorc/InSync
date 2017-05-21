@@ -40,6 +40,7 @@ public class PianoKey : MonoBehaviour
     // Use this for initialization
     void Start ()
     {
+        KeyMesh = gameObject.transform.GetChild(3).gameObject;
         m_Renderer = KeyMesh.GetComponent<Renderer>();
         m_DefaultColor = m_Renderer.material.color;
         m_PlayersSelected = new List<PlayerController>();

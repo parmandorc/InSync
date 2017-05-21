@@ -49,6 +49,7 @@ public class NoteReader : MonoBehaviour {
     // The time that has passed since the beginning of the song
     private float m_Time;
 
+    [SerializeField]
     private RectTransform staveUI;
 
     private float m_Tempo;
@@ -71,7 +72,7 @@ public class NoteReader : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-        staveUI = GameObject.FindGameObjectWithTag("Stave").GetComponent<RectTransform>();
+        //staveUI = GameObject.FindGameObjectWithTag("Stave").GetComponent<RectTransform>();
         m_NoteObjectsQueue = new List<NotesMovement>();
         m_NotesQueue = new List<List<string>>();
         m_AccumulatedTiming = Mathf.CeilToInt(WindowSize);
@@ -158,7 +159,7 @@ public class NoteReader : MonoBehaviour {
         }
     }
 
-    void ReadFile(string file)
+    public void ReadFile(string file)
     {
         string path = System.IO.Path.Combine(Application.dataPath, "SongsData");
         path = System.IO.Path.Combine(path, file);
