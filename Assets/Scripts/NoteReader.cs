@@ -37,6 +37,16 @@ public class NoteReader : MonoBehaviour
     // The maximum beats the player can press a key in advance without the tempo being increased
     private float TempoIncreaseThreshold = 0.5f;
 
+    [SerializeField]
+    private float ScorePerHitKeyFactor = 0.1f;
+
+    [SerializeField]
+    // The maximum amount of time that can pass between key presses two obtain a multihit bonus
+    private float MultihitBonusMaxTime = 0.25f;
+
+    [SerializeField]
+    private float MultihitBonusAmount = 10.0f;
+
     private List<List<string>> m_Notes;
 
     private List<int> m_Timings;
@@ -60,6 +70,11 @@ public class NoteReader : MonoBehaviour
     private float m_TimerSinceTimeStopped;
 
     private bool m_IsPaused = true;
+
+    private float m_Score;
+
+    private float m_TimerSinceLastMultihitStart;
+    private bool m_MultihitTimerElapsed;
 
     // Getters
     public float SongTime { get { return m_Time; } }
@@ -97,6 +112,7 @@ public class NoteReader : MonoBehaviour
         m_AccumulatedTiming = Mathf.CeilToInt(WindowSize);
         m_Tempo = InitialTempo;
         counter = 0;
+        m_Score = 0.0f;
         m_IsPaused = false;
     }
 
@@ -131,6 +147,17 @@ public class NoteReader : MonoBehaviour
                     counter++;
                 }
             }
+
+            // Handle multihit timer
+            if (m_TimerSinceLastMultihitStart > 0.0f)
+            {
+                m_TimerSinceLastMultihitStart -= Time.deltaTime;
+                if (m_TimerSinceLastMultihitStart < 0.0f)
+                {
+                    m_TimerSinceLastMultihitStart = 0.0f;
+                    m_MultihitTimerElapsed = true;
+                }
+            }
         }
     }
 
@@ -159,19 +186,30 @@ public class NoteReader : MonoBehaviour
     {
         if (!m_IsPaused && m_NotesQueue.Count > 0 && m_NotesQueue[0].Contains(key))
         {
-            // Determine the increase in tempo
-            float timeAdvance = m_NoteObjectsQueue[0].Timing - m_Time;
-            if (timeAdvance >= TempoIncreaseThreshold)
+            if (!m_MultihitTimerElapsed) // If can get multihit bonus...
             {
-                m_Tempo += timeAdvance * TempoIncreaseRate;
+                if (m_TimerSinceLastMultihitStart <= 0.0f) // If this is the first key hit in a multihit, start timer;
+                {
+                    m_TimerSinceLastMultihitStart = MultihitBonusMaxTime;
+                }
+                else if (m_TimerSinceLastMultihitStart > 0.0f)
+                {
+                    m_Score += MultihitBonusAmount;
+                }
             }
+
+            // Handle score
+            m_Score += m_Tempo * ScorePerHitKeyFactor;
 
             // Remove the pressed key from the top of the queue
             m_NoteObjectsQueue[0].OnKeyPressed(key);
             m_NotesQueue[0].Remove(key);
-            if (m_NotesQueue[0].Count == 0)
+            if (m_NotesQueue[0].Count == 0) // If all keys in the top of the queue were pressed...
             {
-                // If all keys in the top of the queue were pressed, continue
+                // Handle multihit bonus timer
+                m_TimerSinceLastMultihitStart = 0.0f;
+                m_MultihitTimerElapsed = false;
+
                 GameObject note = m_NoteObjectsQueue[0].gameObject;
                 m_NoteObjectsQueue.RemoveAt(0);
                 m_NotesQueue.RemoveAt(0);
@@ -189,6 +227,15 @@ public class NoteReader : MonoBehaviour
                     }
                 }
             }
+
+            // Determine the increase in tempo
+            float timeAdvance = m_NoteObjectsQueue[0].Timing - m_Time;
+            if (timeAdvance >= TempoIncreaseThreshold)
+            {
+                m_Tempo += timeAdvance * TempoIncreaseRate;
+            }
+
+            print(m_Score);
         }
     }
 
